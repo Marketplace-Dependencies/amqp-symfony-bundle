@@ -1,0 +1,23 @@
+{
+  "name": "jurry/amqp-symfony-bundle",
+  "description": "RabbitMQ Symfony Bundle",
+  "minimum-stability": "stable",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "amqp-symfony-bundle",
+      "email": "jurrywajdi@yahoo.com"
+    }
+  ],
+  "require": {
+    "symfony/dependency-injection": "5.0.*",
+    "symfony/http-kernel": "*",
+    "symfony/config": "*",
+    "symfony/console": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Jurry\\RabbitMQ\\": "Jurry/RabbitMQ/"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="jurry.rabbit_mq.handler.amqp_handler" class="Jurry\RabbitMQ\Handler\AmqpHandler" />
+        <service id="Jurry\RabbitMQ\Handler\AmqpHandler" alias="jurry.rabbit_mq.handler.amqp_handler" />
+
+        <service id="jurry.rabbit_mq.handler.request_handler" class="Jurry\RabbitMQ\Handler\RequestHandler">
+            <argument type="service" id="service_container" />
+        </service>
+        <service id="Jurry\RabbitMQ\Handler\RequestHandler" alias="jurry.rabbit_mq.handler.request_handler" />
+
+        <service id="jurry.rabbit_mq.handler.request_sender" class="Jurry\RabbitMQ\Handler\RequestSender">
+            <argument type="service" id="jurry.rabbit_mq.handler.amqp_handler" />
+            <argument type="service" id="logger" />
+        </service>
+        <service id="Jurry\RabbitMQ\Handler\RequestSender" alias="jurry.rabbit_mq.handler.request_sender" />
+
+        <service id="jurry.rabbit_mq.command.sync_worker_command" class="Jurry\RabbitMQ\Command\SyncWorkerCommand">
+            <tag name="console.command" command="sync_worker" />
+            <argument type="service" id="jurry.rabbit_mq.handler.amqp_handler" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="jurry.rabbit_mq.handler.request_handler" />
+        </service>
+        <service id="Jurry\RabbitMQ\Command\SyncWorkerCommand" alias="jurry.rabbit_mq.command.sync_worker_command" />
+
+        <service id="jurry.rabbit_mq.command.async_worker_command" class="Jurry\RabbitMQ\Command\AsyncWorkerCommand">
+            <tag name="console.command" command="async_worker" />
+            <argument type="service" id="jurry.rabbit_mq.handler.amqp_handler" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="jurry.rabbit_mq.handler.request_handler" />
+        </service>
+        <service id="Jurry\RabbitMQ\Command\AsyncWorkerCommand" alias="jurry.rabbit_mq.command.async_worker_command" />
+    </services>
+</container>
