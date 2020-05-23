@@ -1,7 +1,7 @@
 ## RabbitMQ symfony bundle v1.0
 #### Description:
 
-- Its purpose is to initiate workers (consumers) and to send "sync" and "async" requests to another queues or exchanges.
+Its purpose is to initiate workers (consumers) and to send "sync" and "async" requests to another queues or exchanges.
 ---
 
 #### Installation
