@@ -47,3 +47,68 @@ amqp_handler:
 ./bin/console async_worker # to start Async consumer
 ```
 - These two commands will create two queues for you, first one is "{name}_sync" and "{name}_async"
+
+#### Workers (Consumers)
+Workers (consumers) are looking for your registered services to initiate and execute the requested method inside them,
+So when another application requests an info from yours, they should send in the message body the following data:
+```json
+{
+  "service": "service_name",
+  "method": "the method to be called inside the service class",
+  "params": "the data to be passed to the method inside the service class"
+}
+```
+
+Example: Assume service A asks service B for a random number
+> Service A will send this message to service B:
+> ```json
+> {
+>   "service": "random_number",
+>   "method": "generate",
+>   "params": {"min": 1, "max": 10}
+> }
+> ```
+
+Service B will receive the message, then try to consume it, so, it should have the service class "RandomNumberService" with method "generate" implemented inside:
+```php
+class RandomNumberService {
+    public function generate(int $min, int $max)
+    {
+        return rand($min, $max);
+    }
+}
+```
+This service should be registered as a public service in the container dependency injector, which you can achieve this by adding new definition inside `config/services.yaml`:
+```yaml
+...
+app.random_number:
+    class: App\Service\RandomNumberService
+    public: true
+```
+As you see, the service id should be prefixed by `app.`, that's the way this package looking for registered services.
+Same behavior applies for both "sync" and "async" workers.
+
+#### Request sender
+In order to send requests to another queue, you can inject the `RequestSender` service inside any class you want, then:
+```php
+class FooBar {
+    /** @var \Jurry\RabbitMQ\Handler\RequestSender*/
+    private $requestSender;
+    
+    public function __construct(\Jurry\RabbitMQ\Handler\RequestSender $requestSender)
+    {
+        $this->requestSender = $requestSender;
+    }
+    
+    public function getRandomNumberFromAnotherApp(int $min = 1, int $max = 10): int
+    {
+        return $this->requestSender
+            ->setQueueName('external_queue_name') // This is the queue name which another app listens to
+            ->setService('randomNumber') // This is the service class name which you target (RandomNumberService)
+            ->setMethod('generate') // Method name implemented inside the service class
+            ->setData(['min' => $min, 'max' => $max])
+            ->sendSync();
+    }
+}
+```
+If you're using this bundle within another Symfony app, you should follow the rules mentioned in "Workers (Consumers)" section in naming services classes, else, you're free to use any naming convention matches the another app definition for services.

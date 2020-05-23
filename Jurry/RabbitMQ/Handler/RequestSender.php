@@ -7,7 +7,7 @@
 
 namespace Jurry\RabbitMQ\Handler;
 
-use App\Exception\OperationFailed;
+use Jurry\RabbitMQ\Exception\OperationFailed;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
