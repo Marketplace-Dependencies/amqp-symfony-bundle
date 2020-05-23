@@ -14,7 +14,7 @@ composer require jurry/amqp-symfony-bundle
 #### Usage
 
 After installing the bundle using composer, a new configuration file 
-created ```config/packages/jurry_rabbitmq.yaml```. Let's take a look:
+created `config/packages/jurry_rabbitmq.yaml`. Let's take a look:
 ```yaml
 amqp_handler:
 #    You can define connection in both ways: as array or as a string

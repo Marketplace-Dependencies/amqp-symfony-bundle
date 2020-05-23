@@ -1,12 +1,13 @@
 {
   "version": "1.0",
   "name": "jurry/amqp-symfony-bundle",
+  "type": "symfony-bundle",
   "description": "RabbitMQ Symfony Bundle",
   "minimum-stability": "stable",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "authors": [
     {
-      "name": "amqp-symfony-bundle",
+      "name": "Wajdi Jurry",
       "email": "jurrywajdi@yahoo.com"
     }
   ],
