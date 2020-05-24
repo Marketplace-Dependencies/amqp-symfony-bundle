@@ -11,11 +11,17 @@ matrix:
     fast_finish: true
     include:
         - php: 7.2
-          env: SYMFONY_VERSION=5.*
+          env:
+            - SYMFONY_VERSION=5.*
+            - SKELETON_VERSION="^5.0"
         - php: 7.3
-          env: SYMFONY_VERSION=5.*
+          env:
+            - SYMFONY_VERSION=5.*
+            - SKELETON_VERSION="^5.0"
         - php: 7.4
-          env: SYMFONY_VERSION=5.*
+          env:
+            - SYMFONY_VERSION=5.*
+            - SKELETON_VERSION="^5.0"
 
 cache:
     directories:
