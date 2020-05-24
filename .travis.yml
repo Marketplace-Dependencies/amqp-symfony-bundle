@@ -1,0 +1,24 @@
+language: php
+
+php:
+    - 7.2
+    - 7.3
+    - 7.4
+
+sudo: false
+
+matrix:
+    fast_finish: true
+    include:
+        - php: 7.2
+          env: SYMFONY_VERSION=5.*
+
+cache:
+    directories:
+        - ~/.composer/cache
+        - ~/composer
+
+before_install:
+    - if [ "$SYMFONY_VERSION" != "" ]; then composer require "symfony/symfony:${SYMFONY_VERSION}" --no-update; fi;
+
+install: composer update --prefer-dist --no-interaction $COMPOSER_FLAGS
