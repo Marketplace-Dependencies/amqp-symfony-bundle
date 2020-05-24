@@ -19,7 +19,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder('amqp_handler');
-        $rootNode = $treeBuilder->getRootNode();
+        $rootNode = method_exists(TreeBuilder::class, 'getRootNode') ? $treeBuilder->getRootNode() : $treeBuilder->root('amqp_handler');
 
         $rootNode->children()
             ->arrayNode('connection')
