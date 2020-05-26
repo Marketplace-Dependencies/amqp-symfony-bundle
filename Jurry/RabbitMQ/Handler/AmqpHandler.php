@@ -28,7 +28,13 @@ class AmqpHandler
      * @param string $password
      * @param array $queuesProperties
      */
-    public function __construct(string $host, int $port, string $user = 'guest', string $password = 'guest', array $queuesProperties = [])
+    public function __construct(
+        string $host = 'localhost',
+        int $port = 5672,
+        string $user = 'guest',
+        string $password = 'guest',
+        array $queuesProperties = []
+    )
     {
         $connection = new AMQPStreamConnection($host, $port, $user, $password);
         $this->channel = $connection->channel();

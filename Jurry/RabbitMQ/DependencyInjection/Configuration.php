@@ -22,13 +22,7 @@ class Configuration implements ConfigurationInterface
         $rootNode = method_exists(TreeBuilder::class, 'getRootNode') ? $treeBuilder->getRootNode() : $treeBuilder->root('amqp_handler');
 
         $rootNode->children()
-            ->scalarNode('connection')
-                ->info('Connection parameters')
-                ->validate()
-                    ->ifEmpty()
-                    ->thenInvalid('You should provide connection string')
-                ->end()
-            ->end()
+            ->scalarNode('connection')->info('Connection parameters')->end()
             ->arrayNode('queues_properties')
                 ->info('Queues properties')
                 ->children()
