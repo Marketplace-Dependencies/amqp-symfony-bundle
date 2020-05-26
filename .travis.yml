@@ -23,6 +23,7 @@ cache:
         - ~/composer
 
 before_install:
+    - export SYMFONY_ENDPOINT=https://flex.symfony.com/r/github.com/symfony/recipes-contrib/944
     - if [ "$SYMFONY_VERSION" != "" ]; then composer require "symfony/symfony:${SYMFONY_VERSION}" --no-update; fi;
 
 install: composer update --prefer-dist --no-interaction $COMPOSER_FLAGS
