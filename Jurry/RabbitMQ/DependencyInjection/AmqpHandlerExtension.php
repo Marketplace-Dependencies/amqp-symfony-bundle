@@ -29,11 +29,13 @@ class AmqpHandlerExtension extends Extension
         $configuration = $this->getConfiguration($configs, $container);
         $config = $this->processConfiguration($configuration, $configs);
 
+        $connection = parse_url($config['connection']);
+
         $definition = $container->getDefinition('jurry.rabbit_mq.handler.amqp_handler');
-        $definition->setArgument(0, $config['connection']['host']);
-        $definition->setArgument(1, $config['connection']['port']);
-        $definition->setArgument(2, $config['connection']['user']);
-        $definition->setArgument(3, $config['connection']['password']);
+        $definition->setArgument(0, $connection['host']);
+        $definition->setArgument(1, $connection['port']);
+        $definition->setArgument(2, $connection['user']);
+        $definition->setArgument(3, $connection['pass']);
         $definition->setArgument(4, $config['queues_properties']);
     }
 }
