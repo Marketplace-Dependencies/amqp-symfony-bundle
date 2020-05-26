@@ -22,7 +22,12 @@ class Configuration implements ConfigurationInterface
         $rootNode = method_exists(TreeBuilder::class, 'getRootNode') ? $treeBuilder->getRootNode() : $treeBuilder->root('amqp_handler');
 
         $rootNode->children()
-            ->arrayNode('connection')
+            ->scalarNode('connection')
+                ->info('Connection parameters')
+                ->validate()
+                    ->ifEmpty()
+                    ->thenInvalid('You should provide connection string')
+                ->end()
                 ->beforeNormalization()
                     ->ifString()
                     ->then(function ($v) {
@@ -32,15 +37,8 @@ class Configuration implements ConfigurationInterface
                             unset($url['scheme'], $url['pass']);
                         }
 
-                        return $url;
+                        return ['connection' => $url];
                     })
-                ->end()
-                ->info('Connection parameters')
-                ->children()
-                    ->scalarNode('host')->info('RabbitMQ host')->defaultValue('localhost')->end()
-                    ->integerNode('port')->info('RabbitMQ port')->defaultValue(5672)->end()
-                    ->scalarNode('user')->info('RabbitMQ user name')->defaultValue('guest')->cannotBeEmpty()->end()
-                    ->scalarNode('password')->info('RabbitMQ password')->defaultValue('guest')->cannotBeEmpty()->end()
                 ->end()
             ->end()
             ->arrayNode('queues_properties')
