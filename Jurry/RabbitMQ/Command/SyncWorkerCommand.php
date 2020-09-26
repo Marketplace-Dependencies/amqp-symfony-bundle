@@ -66,21 +66,19 @@ class SyncWorkerCommand extends Command
                     try {
 
                         // handle request
-                        $response = $this->requestHandler->process(
-                            $payload['service'],
+                        $message = $this->requestHandler->process(
+                            $payload['route'],
                             $payload['method'],
-                            $payload['params']
+                            $payload['query'],
+                            $payload['body']
                         );
-
-                        // send response
-                        $message = json_encode($response);
 
                     } catch (\Throwable $exception) {
                         $this->logger->error($exception->getMessage());
                         $message = json_encode([
                             'hasError' => true,
                             'message' => $exception->getMessage(),
-                            'code' => $exception->getCode() ?: 500
+                            'status' => $exception->getCode() ?: 500
                         ]);
                     }
                     $amqpRequest->basic_ack($request->delivery_info['delivery_tag']);
