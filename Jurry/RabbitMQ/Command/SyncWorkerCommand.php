@@ -69,6 +69,7 @@ class SyncWorkerCommand extends Command
                         $message = $this->requestHandler->process(
                             $payload['route'],
                             $payload['method'],
+                            $payload['headers'],
                             $payload['query'],
                             $payload['body']
                         );

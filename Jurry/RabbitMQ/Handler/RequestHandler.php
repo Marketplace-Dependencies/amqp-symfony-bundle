@@ -25,15 +25,17 @@ class RequestHandler
     /**
      * @param string $route
      * @param string $method
-     * @param array $body
+     * @param array $headers
      * @param array $query
+     * @param array $body
      * @return string|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function process(string $route = '', string $method = '', array $query = [], array $body = [])
+    public function process(string $route = '', string $method = '', array $headers = [], array $query = [], array $body = [])
     {
         if (!empty($route)) {
             $request = $this->httpClient->request($method, $route, [
+                'headers' => $headers,
                 'json' => $body,
                 'query' => $query
             ]);
