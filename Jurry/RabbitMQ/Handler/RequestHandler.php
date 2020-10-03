@@ -17,8 +17,8 @@ class RequestHandler
     public function __construct()
     {
         $this->httpClient = new Client([
-            'base_uri' => env('JURRY_BASE_API_URI'),
-            'timeout' => env('JURRY_HTTP_CLIENT_TIMEOUT')
+            'base_uri' => $_ENV['JURRY_BASE_API_URI'],
+            'timeout' => $_ENV['JURRY_HTTP_CLIENT_TIMEOUT']
         ]);
     }
 
