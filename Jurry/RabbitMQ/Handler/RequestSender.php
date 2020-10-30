@@ -15,17 +15,18 @@ use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
 
-class RequestSender
+class RequestSender implements RequestSenderInterface
 {
     const REQUEST_TYPE_SYNC = 'sync';
     const REQUEST_TYPE_ASYNC = 'async';
 
     private $queueName;
-    private $service;
-    private $serviceArgs;
+    private $route;
     private $method;
     private $correlationId;
-    private $data;
+    private $headers = [];
+    private $body = [];
+    private $query = [];
     private $replyTo = null;
     private $exchange = null;
     private $requestType;
@@ -70,23 +71,12 @@ class RequestSender
     }
 
     /**
-     * @param string $service
+     * @param string $route
      * @return RequestSender
      */
-    public function setService(string $service)
+    public function setRoute(string $route)
     {
-        $this->service = $service;
-
-        return $this;
-    }
-
-    /**
-     * @param array $args
-     * @return RequestSender
-     */
-    public function setServiceArgs(array $args = [])
-    {
-        $this->serviceArgs = $args;
+        $this->route = $route;
 
         return $this;
     }
@@ -102,13 +92,31 @@ class RequestSender
         return $this;
     }
 
+    public function setHeaders(array $headers = [])
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
     /**
-     * @param array $data
+     * @param array $body
      * @return RequestSender
      */
-    public function setData(array $data)
+    public function setBody(array $body)
     {
-        $this->data = $data;
+        $this->body = $body;
+
+        return $this;
+    }
+
+    /**
+     * @param array $query
+     * @return $this
+     */
+    public function setQuery(array $query)
+    {
+        $this->query = $query;
 
         return $this;
     }
@@ -135,22 +143,19 @@ class RequestSender
         return $this;
     }
 
-    /**
-     * @throws OperationFailed
-     */
     private function validate()
     {
         $validator = Validation::createValidator();
 
         $constraints = new Collection([
-            'queueName' => [new NotBlank()],
-            'service' => [new NotBlank()],
+            'queue' => [new NotBlank()],
+            'route' => [new NotBlank()],
             'method' => [new NotBlank()]
         ]);
 
         $validatedFields = [
-            'queueName' => $this->queueName,
-            'service' => $this->service,
+            'queue' => $this->queueName,
+            'route' => $this->route,
             'method' => $this->method
         ];
 
@@ -204,16 +209,15 @@ class RequestSender
      * @param AMQPMessage $response
      * @throws \Exception
      */
-    public function getResponse($response)
+    public function getResponse(AMQPMessage $response)
     {
         if ($response->get('correlation_id') == $this->correlationId) {
-            $this->response = json_decode($response->getBody(), true);
+            $this->response = json_decode($response->getBody(), true) ?? [];
             if (array_key_exists('hasError', $this->response) && true === $this->response['hasError']) {
                 $this->channel->basic_ack($response->delivery_info['delivery_tag']);
-                throw new \Exception($this->response['message'], $this->response['code']);
+                throw new \Exception($this->response['message'], $this->response['status']);
             }
         }
-
     }
 
     /**
@@ -236,10 +240,11 @@ class RequestSender
 
         $this->initializeConsumer();
         $message = new AMQPMessage(json_encode([
-            'service' => $this->service,
-            'service_args' => $this->serviceArgs,
+            'route' => $this->route,
             'method' => $this->method,
-            'params' => $this->data
+            'headers' => $this->headers,
+            'query' => $this->query,
+            'body' => $this->body,
         ]), [
             'reply_to' => $this->replyTo,
             'correlation_id' => $this->getCorrelationId(),
@@ -250,16 +255,14 @@ class RequestSender
         // Waiting response
         $this->waitResponse();
 
-        // close connection
-        $this->channel->close();
+        // Store response in variable and unset the original one
+        $response = $this->response;
+        unset($this->response);
 
         // Return response
-        return $this->response;
+        return $response;
     }
 
-    /**
-     * @throws OperationFailed
-     */
     public function sendAsync()
     {
         $this->requestType = self::REQUEST_TYPE_ASYNC;
@@ -268,12 +271,12 @@ class RequestSender
         $this->validate();
 
         $message = new AMQPMessage(json_encode([
-            'service' => $this->service,
-            'service_args' => $this->serviceArgs,
+            'route' => $this->route,
             'method' => $this->method,
-            'params' => $this->data
+            'headers' => $this->headers,
+            'body' => $this->body,
+            'query' => $this->query
         ]));
         $this->channel->basic_publish($message, $this->exchange, $this->queueName);
-        $this->channel->close();
     }
 }
