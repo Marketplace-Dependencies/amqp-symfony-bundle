@@ -107,8 +107,8 @@ class FooBar {
         return $this->requestSender
             ->setQueueName('external_queue_name') // This is the queue name which another app listens to
             ->setRoute('number/generate') // The path to the requested route, without providing the full link
-            ->setMethod('post') // Method name implemented inside the service class
-            ->setBody(['min' => $min, 'max' => $max])
+            ->setMethod('post') // Http request method
+            ->setBody(['min' => $min, 'max' => $max]) // Request body
             ->sendSync();
     }
 }
