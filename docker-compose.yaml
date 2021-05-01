@@ -2,6 +2,8 @@ version: '3.3'
 
 services:
   amqp-symfony-bundle:
-    image: jurry/amqp-symfony-bundle
+    build:
+      context: .
     volumes:
     - .:/src
+    - /src/vendor
