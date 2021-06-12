@@ -54,9 +54,11 @@ Workers (consumers) are looking for your registered services to initiate and exe
 So when another application requests an info from yours, they should send in the message body the following data:
 ```json
 {
-  "service": "service_name",
-  "method": "the method to be called inside the service class",
-  "params": "the data to be passed to the method inside the service class"
+  "route": "http://localhost:8000/path/to/your/route", # base route should be set as ENV variable
+  "method": "GET|POST|DELETE|PUT|...etc",
+  "body": "Request body",
+  "query": "Query parameters",
+  "headers": "Request headers"
 }
 ```
 
@@ -64,39 +66,38 @@ Example: Assume service A asks service B for a random number
 > Service A will send this message to service B:
 > ```json
 > {
->   "service": "random_number",
->   "method": "generate",
->   "params": {"min": 1, "max": 10}
+>   "route": "http://localhost:8000/api/number",
+>   "method": "POST",
+>   "body": {"min": 1, "max": 10}
 > }
 > ```
 
-Service B will receive the message, then try to consume it, so, it should have the service class "RandomNumberService" with method "generate" implemented inside:
+Service B will receive the message, then try to consume it, so, it should have the route "POST /api/number" to return a response
 ```php
-class RandomNumberService {
-    public function generate(int $min, int $max)
+class NumberController {
+    public function generate(Request $request)
     {
-        return rand($min, $max);
+        return rand($request->get('min'), $request->get('max'));
     }
 }
 ```
-This service should be registered as a public service in the container dependency injector, which you can achieve this by adding new definition inside `config/services.yaml`:
-```yaml
-...
-app.random_number:
-    class: App\Service\RandomNumberService
-    public: true
+
+You have to set the base_uri as environment variable, just set these values in your `.env` file:
+```bash
+JURRY_BASE_API_URI=http://localhost:8000/api/
+JURRY_HTTP_CLIENT_TIMEOUT=10
 ```
-As you see, the service id should be prefixed by `app.`, that's the way this package looking for registered services.
-Same behavior applies for both "sync" and "async" workers.
 
 #### Request sender
 In order to send requests to another queue, you can inject the `RequestSender` service inside any class you want, then:
 ```php
+use Jurry\RabbitMQ\Handler\RequestSender;
+
 class FooBar {
     /** @var \Jurry\RabbitMQ\Handler\RequestSender*/
     private $requestSender;
     
-    public function __construct(\Jurry\RabbitMQ\Handler\RequestSender $requestSender)
+    public function __construct(RequestSender $requestSender)
     {
         $this->requestSender = $requestSender;
     }
@@ -105,11 +106,20 @@ class FooBar {
     {
         return $this->requestSender
             ->setQueueName('external_queue_name') // This is the queue name which another app listens to
-            ->setService('randomNumber') // This is the service class name which you target (RandomNumberService)
-            ->setMethod('generate') // Method name implemented inside the service class
-            ->setData(['min' => $min, 'max' => $max])
+            ->setRoute('number/generate') // The path to the requested route, without providing the full link
+            ->setMethod('post') // Http request method
+            ->setBody(['min' => $min, 'max' => $max]) // Request body
             ->sendSync();
     }
 }
 ```
-If you're using this bundle within another Symfony app, you should follow the rules mentioned in "Workers (Consumers)" section in naming services classes, else, you're free to use any naming convention matches the another app definition for services.
+#### Change Log
+1. Now, this bundle makes http request to the requested route instead of calling the service class directly. 
+This makes it easier and fully functional of using controllers, this will help to use validation, middlewares and other functionalities implemented in the controller.
+
+2. New environment values added:
+```bash
+JURRY_BASE_API_URI=http://localhost:8000/api/
+JURRY_HTTP_CLIENT_TIMEOUT=10
+```
+These values will be used while initiating the http request inside the service itself

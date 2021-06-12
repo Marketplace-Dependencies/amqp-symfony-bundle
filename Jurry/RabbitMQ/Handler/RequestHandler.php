@@ -1,52 +1,48 @@
 <?php
 /**
  * User: Wajdi Jurry
- * Date: 22/02/19
+ * Date: 24/05/20
  * Time: 04:40 م
  */
 
 namespace Jurry\RabbitMQ\Handler;
 
 
-use Psr\Container\ContainerInterface;
+use GuzzleHttp\Client;
 
 class RequestHandler
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private $httpClient;
 
-    public function __construct(ContainerInterface $container)
+    public function __construct()
     {
-        $this->container = $container;
+        $this->httpClient = new Client([
+            'base_uri' => $_ENV['JURRY_BASE_API_URI'],
+            'timeout' => $_ENV['JURRY_HTTP_CLIENT_TIMEOUT']
+        ]);
     }
 
     /**
-     * @param string $service
-     * @return string
-     */
-    private function formatServiceName(string $service): string
-    {
-        return sprintf('app.%s_service', $service);
-    }
-
-    /**
-     * @param string $service
+     * @param string $route
      * @param string $method
-     * @param $params
-     * @return mixed
-     *
-     * @throws \Exception
+     * @param array $headers
+     * @param array $query
+     * @param array $body
+     * @return string|null
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function process(string $service, string $method, $params)
+    public function process(string $route = '', string $method = '', array $headers = [], array $query = [], array $body = [])
     {
-        $service = $this->container->get($this->formatServiceName($service));
+        if (!empty($route)) {
+            $request = $this->httpClient->request($method, $route, [
+                'headers' => $headers,
+                'json' => $body,
+                'query' => $query
+            ]);
 
-        if (!is_callable([$service, $method])) {
-            throw new \Exception('Method "' . get_class($service) . '::' . $method . '" is not a callable method');
+            return $request->getBody()->getContents();
         }
 
-        return call_user_func_array([$service, $method], $params);
+        return null;
     }
 }

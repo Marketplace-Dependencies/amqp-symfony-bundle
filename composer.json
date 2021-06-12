@@ -17,7 +17,8 @@
     "symfony/http-kernel": "*",
     "symfony/config": "*",
     "symfony/console": "*",
-    "symfony/validator": "*"
+    "symfony/validator": "*",
+    "guzzlehttp/guzzle": "^7.1"
   },
   "autoload": {
     "psr-4": {

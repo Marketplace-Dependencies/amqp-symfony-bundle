@@ -61,9 +61,11 @@ class AsyncWorkerCommand extends Command
                     try {
                         $payload = json_decode($message->getBody(), true);
                         $this->requestHandler->process(
-                            $payload['service'],
+                            $payload['route'],
                             $payload['method'],
-                            $payload['params']
+                            $payload['headers'],
+                            $payload['query'],
+                            $payload['body']
                         );
                     } catch (\Throwable $exception) {
                         $this->logger->error($exception->getMessage());
